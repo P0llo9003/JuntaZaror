@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.duoc.juntazaror.data.local.entity.Cuenta
 import com.duoc.juntazaror.data.local.dao.CuentaDao
 import com.duoc.juntazaror.model.Rol
+import com.duoc.juntazaror.util.PasswordHasher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
                                     Cuenta(
                                         name = "Directiva Demo",
                                         email = "directiva@demo.cl",
-                                        password = "Demo1234",
+                                        password = PasswordHasher.hash("Demo1234"),
                                         rol = Rol.DIRECTIVA
                                     )
                                 )

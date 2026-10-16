@@ -65,6 +65,7 @@ fun UsuariosScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(cuenta.name, style = MaterialTheme.typography.titleMedium)
                                 Text(cuenta.email)
+                                Text(cuenta.password)
                                 Text("Rol: ${cuenta.rol}", style = MaterialTheme.typography.bodySmall)
                             }
                             IconButton(onClick = { cuentaAEliminar = cuenta }) {

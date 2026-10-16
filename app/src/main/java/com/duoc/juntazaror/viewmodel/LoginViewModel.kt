@@ -8,10 +8,13 @@ import com.duoc.juntazaror.model.Rol
 import android.util.Patterns
 import androidx.lifecycle.viewModelScope
 import com.duoc.juntazaror.model.LoginModel
+import com.duoc.juntazaror.util.PasswordHasher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class LoginErrores(
     val email: String? = null,
@@ -50,7 +53,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val cuenta = repository.buscarPorEmail(datos.email)
 
-            if (cuenta == null || cuenta.password != datos.passwordHush) {
+            val claveCorrecta = cuenta != null && withContext(Dispatchers.Default) {
+                PasswordHasher.verificar(datos.passwordHush, cuenta.password)
+            }
+
+
+            if (!claveCorrecta) {
                 _errores.value = LoginErrores(general = "Correo o contraseña incorrectos")
                 return@launch
             }
