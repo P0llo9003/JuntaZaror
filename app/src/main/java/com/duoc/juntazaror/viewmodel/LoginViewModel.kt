@@ -34,6 +34,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _errores = MutableStateFlow(LoginErrores())
     val errores: StateFlow<LoginErrores> = _errores.asStateFlow()
 
+    private val _nombreUsuario = MutableStateFlow("")
+    val nombreUsuario: StateFlow<String> = _nombreUsuario.asStateFlow()
+
     fun actualizarCorreo(valor: String) {
         _login.value = _login.value.copy(email = valor)
     }
@@ -42,7 +45,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         _login.value = _login.value.copy(passwordHush = valor)
     }
 
-    fun iniciarSesion(onExito: () -> Unit) {
+    fun iniciarSesion(onExito: (Rol) -> Unit) {
         val datos = _login.value
         val emailError = if (datos.email.isBlank()) "El correo es obligatorio" else null
         val claveError = if (datos.passwordHush.isBlank()) "Debe ingresar su contraseña" else null
@@ -52,24 +55,17 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             val cuenta = repository.buscarPorEmail(datos.email)
-
             val claveCorrecta = cuenta != null && withContext(Dispatchers.Default) {
                 PasswordHasher.verificar(datos.passwordHush, cuenta.password)
             }
 
-
-            if (!claveCorrecta) {
+            if (cuenta == null || !claveCorrecta) {
                 _errores.value = LoginErrores(general = "Correo o contraseña incorrectos")
                 return@launch
             }
 
-
-            if (cuenta.rol != Rol.DIRECTIVA) {
-                _errores.value = LoginErrores(general = "Por ahora solo la Directiva puede ingresar")
-                return@launch
-            }
-
-            onExito()
+            _nombreUsuario.value = cuenta.name
+            onExito(cuenta.rol)
         }
     }
 }

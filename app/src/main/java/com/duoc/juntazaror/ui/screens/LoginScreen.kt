@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +45,7 @@ import com.duoc.juntazaror.viewmodel.LoginViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onIrARegistro: () -> Unit,
-    onLoginExitoso: () -> Unit
+    onLoginExitoso: (Rol) -> Unit
 ) {
     val login by viewModel.login.collectAsState()
     val errores by viewModel.errores.collectAsState()
@@ -101,7 +102,7 @@ fun LoginScreen(
         }
 
         Button(
-            onClick = { viewModel.iniciarSesion { onLoginExitoso() } },
+            onClick = { viewModel.iniciarSesion(onLoginExitoso) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Iniciar sesión")
