@@ -1,5 +1,6 @@
 package com.duoc.juntazaror.ui.screens
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -49,13 +50,7 @@ fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
         navigationSuiteItems = {
             destinos.forEach { destino ->
                 item(
-                    icon = {
-                        if (destino == AppDestinations.HOME) {
-                            IconoInicioAnimado(destino == currentDestination)
-                        } else {
-                            IconoNav(destino.icon, destino == currentDestination)
-                        }
-                    },
+                    icon = { IconoAnimado(destino.iconRes, destino == currentDestination) },
                     label = { Text(destino.label) },
                     selected = destino == currentDestination,
                     onClick = { currentDestination = destino }
@@ -94,11 +89,11 @@ private fun SeccionEnConstruccion(titulo: String) {
 }
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
-private fun IconoInicioAnimado(selected: Boolean) {
-    val vector = AnimatedImageVector.animatedVectorResource(R.drawable.ic_home_animado)
+private fun IconoAnimado(@DrawableRes recurso: Int, selected: Boolean) {
+    val vector = AnimatedImageVector.animatedVectorResource(recurso)
     Icon(
         painter = rememberAnimatedVectorPainter(vector, atEnd = selected),
-        contentDescription = "Inicio"
+        contentDescription = null
     )
 }
 
@@ -128,13 +123,13 @@ private fun IconoNav(emoji: String, selected: Boolean) {
     )
 }
 
-enum class AppDestinations(val label: String, val icon: String) {
-    HOME("Inicio", "🏠"),
-    ARRIENDOS("Arriendos", "📅"),
-    SOLICITUDES("Solicitudes", "📥"),
-    MOVIMIENTOS("Movimientos", "💰"),
-    TRANSPARENCIA("Transparencia", "📊"),
-    PROFILE("Perfil", "👤")
+enum class AppDestinations(val label: String, @DrawableRes val iconRes: Int) {
+    HOME("Inicio", R.drawable.ic_home_animado),
+    ARRIENDOS("Arriendos", R.drawable.ic_arriendos_animado),
+    SOLICITUDES("Solicitudes", R.drawable.ic_solicitudes_animado),
+    MOVIMIENTOS("Movimientos", R.drawable.ic_movimientos_animado),
+    TRANSPARENCIA("Transparencia", R.drawable.ic_transparencia_animado),
+    PROFILE("Perfil", R.drawable.ic_perfil_animado)
 }
 
 fun destinosPara(rol: Rol): List<AppDestinations> = when (rol) {
