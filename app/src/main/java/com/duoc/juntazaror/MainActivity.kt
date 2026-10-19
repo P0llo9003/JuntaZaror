@@ -18,6 +18,8 @@ import com.duoc.juntazaror.ui.screens.UsuariosScreen
 import com.duoc.juntazaror.ui.theme.AppTheme
 import com.duoc.juntazaror.viewmodel.LoginViewModel
 import com.duoc.juntazaror.model.Rol
+import com.duoc.juntazaror.ui.screens.SolicitarArriendoScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
                             viewModel = loginViewModel,
                             onIrARegistro = { nav.navigate("registro") },
                             onLoginExitoso = { rol ->
-                                val destino = if (rol == Rol.VECINO) "home" else "usuarios"
+                                val destino = "home"
                                 nav.navigate(destino) {
                                     popUpTo("login") { inclusive = true }
                                 }
@@ -50,11 +52,23 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("home") {
-                        HomeScreen(usuario = usuario)
+                        HomeScreen(
+                            usuario = usuario,
+                            onSolicitarArriendo = { nav.navigate("solicitar_arriendo") }
+                        )
                     }
 
                     composable("usuarios") {
                         UsuariosScreen()
+                    }
+
+                    composable("solicitar_arriendo") {
+                        usuario?.let {
+                            SolicitarArriendoScreen(
+                                usuario = it,
+                                onVolver = { nav.popBackStack() }
+                            )
+                        }
                     }
                 }
             }

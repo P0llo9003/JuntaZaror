@@ -9,3 +9,5 @@ val Midnight = Color(0xFF1D1D1D)
 val Linen = Color(0xFFF7F3EB)
 val TextoOscuro = Color(0xFF1F2937)
 val Rojo = Color(0xFFB3261E)
+
+val Confirmacion = Color(0xFF66BB6A)

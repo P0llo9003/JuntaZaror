@@ -23,10 +23,12 @@ import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.model.UsuarioSesion
 import com.duoc.juntazaror.ui.theme.AppTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
 
 
 @Composable
-fun HomeScreen(usuario: UsuarioSesion?) {
+fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
     if (usuario == null) return
 
     val destinos = remember(usuario.rol) { destinosPara(usuario.rol) }
@@ -47,8 +49,8 @@ fun HomeScreen(usuario: UsuarioSesion?) {
         Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             when (currentDestination) {
                 AppDestinations.HOME -> InicioContent(usuario)
-                AppDestinations.ARRIENDOS -> SeccionEnConstruccion("Arriendos")
-                AppDestinations.SOLICITUDES -> SeccionEnConstruccion("Solicitudes")
+                AppDestinations.ARRIENDOS -> ArriendosContent(usuario, onSolicitarArriendo)
+                AppDestinations.SOLICITUDES -> SolicitudesScreen(usuario)
                 AppDestinations.MOVIMIENTOS -> SeccionEnConstruccion("Movimientos")
                 AppDestinations.TRANSPARENCIA -> SeccionEnConstruccion("Transparencia")
                 AppDestinations.PROFILE -> SeccionEnConstruccion("Perfil")
@@ -97,5 +99,22 @@ fun destinosPara(rol: Rol): List<AppDestinations> = when (rol) {
         AppDestinations.HOME, AppDestinations.MOVIMIENTOS,
         AppDestinations.TRANSPARENCIA, AppDestinations.PROFILE
     )
+}
+
+@Composable
+private fun ArriendosContent(usuario: UsuarioSesion, onSolicitarArriendo: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ) {
+        Text("Arriendos", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(onClick = onSolicitarArriendo, modifier = Modifier.fillMaxWidth()) {
+            Text("Solicitar arriendo")
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        MisSolicitudesLista(usuario = usuario, modifier = Modifier.weight(1f))
+    }
 }
 
