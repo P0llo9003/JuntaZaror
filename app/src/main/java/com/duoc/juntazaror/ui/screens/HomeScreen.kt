@@ -1,5 +1,13 @@
 package com.duoc.juntazaror.ui.screens
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +33,9 @@ import com.duoc.juntazaror.ui.theme.AppTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.graphicsLayer
+import com.duoc.juntazaror.R
 
 
 @Composable
@@ -36,12 +47,18 @@ fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            destinos.forEach {
+            destinos.forEach { destino ->
                 item(
-                    icon = { Text(it.icon) },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
+                    icon = {
+                        if (destino == AppDestinations.HOME) {
+                            IconoInicioAnimado(destino == currentDestination)
+                        } else {
+                            IconoNav(destino.icon, destino == currentDestination)
+                        }
+                    },
+                    label = { Text(destino.label) },
+                    selected = destino == currentDestination,
+                    onClick = { currentDestination = destino }
                 )
             }
         }
@@ -58,7 +75,6 @@ fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
         }
     }
 }
-
 @Composable
 private fun InicioContent(usuario: UsuarioSesion) {
     Column(modifier = Modifier.padding(20.dp)) {
@@ -75,6 +91,41 @@ private fun SeccionEnConstruccion(titulo: String) {
         Text(titulo, style = MaterialTheme.typography.headlineMedium)
         Text("Próximamente")
     }
+}
+@OptIn(ExperimentalAnimationGraphicsApi::class)
+@Composable
+private fun IconoInicioAnimado(selected: Boolean) {
+    val vector = AnimatedImageVector.animatedVectorResource(R.drawable.ic_home_animado)
+    Icon(
+        painter = rememberAnimatedVectorPainter(vector, atEnd = selected),
+        contentDescription = "Inicio"
+    )
+}
+
+@Composable
+private fun IconoNav(emoji: String, selected: Boolean) {
+    val escala by animateFloatAsState(
+        targetValue = if (selected) 1.25f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "escala_icono_nav"
+    )
+    val opacidad by animateFloatAsState(
+        targetValue = if (selected) 1f else 0.6f,
+        animationSpec = tween(200),
+        label = "opacidad_icono_nav"
+    )
+
+    Text(
+        text = emoji,
+        modifier = Modifier.graphicsLayer {
+            scaleX = escala
+            scaleY = escala
+            alpha = opacidad
+        }
+    )
 }
 
 enum class AppDestinations(val label: String, val icon: String) {
@@ -117,4 +168,3 @@ private fun ArriendosContent(usuario: UsuarioSesion, onSolicitarArriendo: () -> 
         MisSolicitudesLista(usuario = usuario, modifier = Modifier.weight(1f))
     }
 }
-
