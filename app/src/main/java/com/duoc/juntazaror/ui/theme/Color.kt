@@ -1,15 +1,11 @@
 package com.duoc.juntazaror.ui.theme
 import androidx.compose.ui.graphics.Color
 
-
-val AzulRey = Color(0xFF1E40AF)
-val AzulReyOscuro = Color(0xFF14307F)
-val AzulReyClaro = Color(0xFFDCE6FF)
-
-val Blanco = Color(0xFFFFFFFF)
-val GrisClaro = Color(0xFFF3F4F6)
-val GrisClaroMedio = Color(0xFFE5E7EB)
-val GrisBorde = Color(0xFF9CA3AF)
-
+val Tierra = Color(0xFFA16D47)
+val Arena = Color(0xFFD8CABA)
+val Latte = Color(0xFFC0AD8D)
+val Oliva = Color(0xFF776F4F)
+val Midnight = Color(0xFF1D1D1D)
+val Linen = Color(0xFFF7F3EB)
 val TextoOscuro = Color(0xFF1F2937)
 val Rojo = Color(0xFFB3261E)
