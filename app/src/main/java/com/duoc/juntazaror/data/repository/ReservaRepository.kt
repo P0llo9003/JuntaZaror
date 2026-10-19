@@ -5,6 +5,8 @@ import com.duoc.juntazaror.data.local.entity.Reserva
 import com.duoc.juntazaror.data.local.entity.ReservaConSolicitante
 import com.duoc.juntazaror.model.BloqueHorario
 import com.duoc.juntazaror.model.EstadoReserva
+import com.duoc.juntazaror.model.Rol
+import com.duoc.juntazaror.model.UsuarioSesion
 import kotlinx.coroutines.flow.Flow
 
 class ReservaRepository(private val dao: ReservaDao) {
@@ -21,8 +23,16 @@ class ReservaRepository(private val dao: ReservaDao) {
         dao.insert(reserva)
     }
 
-    suspend fun aprobar(id: Int) = dao.cambiarEstado(id, EstadoReserva.CONFIRMADA)
+    suspend fun aprobar(id: Int, resolutor: UsuarioSesion) {
+        exigirDirectiva(resolutor)
+        dao.cambiarEstado(id, EstadoReserva.CONFIRMADA)
+    }
 
-    suspend fun rechazar(id: Int) = dao.cambiarEstado(id, EstadoReserva.RECHAZADA)
+    suspend fun rechazar(id: Int, resolutor: UsuarioSesion) {
+        exigirDirectiva(resolutor)
+        dao.cambiarEstado(id, EstadoReserva.RECHAZADA)
+    }
 
+    private fun exigirDirectiva(usuario: UsuarioSesion) =
+        require(usuario.rol == Rol.DIRECTIVA) { "Solo la directiva puede resolver solicitudes" }
 }

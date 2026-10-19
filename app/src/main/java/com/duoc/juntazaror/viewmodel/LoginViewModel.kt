@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.duoc.juntazaror.notificaciones.NotificadorReservas
+import kotlinx.coroutines.Job
 
 data class LoginErrores(
     val email: String? = null,
@@ -41,6 +43,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _usuario = MutableStateFlow<UsuarioSesion?>(null)
     val usuario: StateFlow<UsuarioSesion?> = _usuario.asStateFlow()
 
+    private val notificador = NotificadorReservas(application)
+    private var jobNotificaciones: Job? = null
+
     fun actualizarCorreo(valor: String) {
         _login.value = _login.value.copy(email = valor)
     }
@@ -48,7 +53,18 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun actualizarClaveHush(valor: String) {
         _login.value = _login.value.copy(passwordHush = valor)
     }
+    private fun iniciarNotificaciones(usuario: UsuarioSesion) {
+        jobNotificaciones?.cancel()
+        jobNotificaciones = viewModelScope.launch { notificador.escuchar(usuario) }
+    }
 
+    fun cerrarSesion() {
+        jobNotificaciones?.cancel()
+        jobNotificaciones = null
+        _usuario.value = null
+        _nombreUsuario.value = ""
+        _login.value = LoginModel()
+    }
     fun iniciarSesion(onExito: (Rol) -> Unit) {
         val datos = _login.value
         val emailError = if (datos.email.isBlank()) "El correo es obligatorio" else null
@@ -68,8 +84,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 return@launch
             }
 
+            val sesion = UsuarioSesion(cuenta.id, cuenta.name, cuenta.email, cuenta.rol)
             _nombreUsuario.value = cuenta.name
-            _usuario.value = UsuarioSesion(cuenta.id, cuenta.name, cuenta.email, cuenta.rol)
+            _usuario.value = sesion
+            iniciarNotificaciones(sesion)
             onExito(cuenta.rol)
         }
     }
