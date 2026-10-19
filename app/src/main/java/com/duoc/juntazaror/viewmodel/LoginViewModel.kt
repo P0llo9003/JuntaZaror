@@ -8,6 +8,7 @@ import com.duoc.juntazaror.model.Rol
 import android.util.Patterns
 import androidx.lifecycle.viewModelScope
 import com.duoc.juntazaror.model.LoginModel
+import com.duoc.juntazaror.model.UsuarioSesion
 import com.duoc.juntazaror.util.PasswordHasher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +38,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _nombreUsuario = MutableStateFlow("")
     val nombreUsuario: StateFlow<String> = _nombreUsuario.asStateFlow()
 
+    private val _usuario = MutableStateFlow<UsuarioSesion?>(null)
+    val usuario: StateFlow<UsuarioSesion?> = _usuario.asStateFlow()
+
     fun actualizarCorreo(valor: String) {
         _login.value = _login.value.copy(email = valor)
     }
@@ -65,6 +69,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             _nombreUsuario.value = cuenta.name
+            _usuario.value = UsuarioSesion(cuenta.id, cuenta.name, cuenta.email, cuenta.rol)
             onExito(cuenta.rol)
         }
     }

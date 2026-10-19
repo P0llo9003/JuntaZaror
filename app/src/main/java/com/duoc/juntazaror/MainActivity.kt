@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
                 val nav = rememberNavController()
                 val loginViewModel: LoginViewModel = viewModel()
                 val nombreUsuario by loginViewModel.nombreUsuario.collectAsState()
+                val usuario by loginViewModel.usuario.collectAsState()
 
                 NavHost(navController = nav, startDestination = "login") {
 
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("home") {
-                        HomeScreen(nombre = nombreUsuario)
+                        HomeScreen(usuario = usuario)
                     }
 
                     composable("usuarios") {
