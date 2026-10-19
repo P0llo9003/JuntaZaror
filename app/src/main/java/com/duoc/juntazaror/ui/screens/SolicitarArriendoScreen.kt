@@ -69,7 +69,6 @@ fun SolicitarArriendoScreen(
     var mostrarCalendario by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Cuando se guarda con éxito: aviso y volver
     LaunchedEffect(guardada) {
         if (guardada) {
             Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show()
@@ -97,7 +96,6 @@ fun SolicitarArriendoScreen(
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Fecha (se elige con el calendario)
         OutlinedTextField(
             value = form.fecha,
             onValueChange = {},
@@ -114,7 +112,7 @@ fun SolicitarArriendoScreen(
             supportingText = { errores.fecha?.let { MensajeError(it) } }
         )
 
-        // Horario
+
         Text("Horario", style = MaterialTheme.typography.titleMedium)
         BloqueHorario.entries.forEach { bloque ->
             Row(
@@ -133,7 +131,6 @@ fun SolicitarArriendoScreen(
         }
         errores.bloque?.let { MensajeError(it) }
 
-        // Motivo
         OutlinedTextField(
             value = form.motivo,
             onValueChange = { viewModel.actualizarMotivo(it) },
@@ -143,7 +140,6 @@ fun SolicitarArriendoScreen(
             supportingText = { errores.motivo?.let { MensajeError(it) } }
         )
 
-        // Cantidad de personas
         OutlinedTextField(
             value = form.personas,
             onValueChange = { viewModel.actualizarPersonas(it) },
@@ -167,7 +163,6 @@ fun SolicitarArriendoScreen(
     }
 
     if (mostrarCalendario) {
-        // Solo se pueden elegir fechas desde hoy en adelante
         val hoyUtc = remember {
             LocalDate.now().atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
         }

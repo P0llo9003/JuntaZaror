@@ -37,7 +37,6 @@ fun SolicitudesScreen(
     usuario: UsuarioSesion,
     viewModel: SolicitudesViewModel = viewModel()
 ) {
-    // Seguridad extra: solo la Directiva ve esta pantalla
     if (usuario.rol != Rol.DIRECTIVA) return
 
     val solicitudes by viewModel.solicitudes.collectAsState()
@@ -115,7 +114,7 @@ private fun SolicitudCard(
 fun EstadoEtiqueta(estado: EstadoReserva) {
     val (texto, color) = when (estado) {
         EstadoReserva.PENDIENTE -> "Pendiente" to MaterialTheme.colorScheme.tertiary
-        EstadoReserva.CONFIRMADA -> "Confirmada" to Color(0xFF66BB6A)
+        EstadoReserva.CONFIRMADA -> "Confirmada" to Color(0xFF66BB6A) //TODO Crear una ruta para el color en vez de llamar al codigo de color de una
         EstadoReserva.RECHAZADA -> "Rechazada" to MaterialTheme.colorScheme.error
     }
     Text(text = texto, color = color, style = MaterialTheme.typography.labelLarge)
