@@ -18,6 +18,7 @@ import com.duoc.juntazaror.ui.screens.UsuariosScreen
 import com.duoc.juntazaror.ui.theme.AppTheme
 import com.duoc.juntazaror.viewmodel.LoginViewModel
 import com.duoc.juntazaror.model.Rol
+import com.duoc.juntazaror.ui.screens.RegistrarMovimientoScreen
 import com.duoc.juntazaror.ui.screens.SolicitarArriendoScreen
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +55,8 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         HomeScreen(
                             usuario = usuario,
-                            onSolicitarArriendo = { nav.navigate("solicitar_arriendo") }
+                            onSolicitarArriendo = { nav.navigate("solicitar_arriendo") },
+                            onRegistrarMovimiento = { nav.navigate("registrar_movimiento") }
                         )
                     }
 
@@ -69,6 +71,10 @@ class MainActivity : ComponentActivity() {
                                 onVolver = { nav.popBackStack() }
                             )
                         }
+                    }
+
+                    composable("registrar_movimiento") {
+                        RegistrarMovimientoScreen(onVolver = { nav.popBackStack() })
                     }
                 }
             }

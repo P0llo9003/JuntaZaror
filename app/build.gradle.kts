@@ -68,6 +68,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-text-google-fonts")
     implementation("androidx.compose.animation:animation-graphics")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     ksp("androidx.room:room-compiler:2.6.1")
 
 }

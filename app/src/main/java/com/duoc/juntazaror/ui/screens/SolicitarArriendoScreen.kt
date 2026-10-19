@@ -193,7 +193,7 @@ fun SolicitarArriendoScreen(
 }
 
 @Composable
-private fun MensajeError(mensaje: String) {
+fun MensajeError(mensaje: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Filled.Warning,
