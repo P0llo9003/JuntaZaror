@@ -141,7 +141,6 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
-    // La pantalla lo llama después de volver atrás o mostrar la confirmación
     fun confirmacionVista() {
         _guardada.value = false
     }
