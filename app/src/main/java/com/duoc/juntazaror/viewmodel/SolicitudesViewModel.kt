@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.juntazaror.data.local.AppDatabase
 import com.duoc.juntazaror.data.local.entity.ReservaConSolicitante
 import com.duoc.juntazaror.data.repository.ReservaRepository
+import com.duoc.juntazaror.model.UsuarioSesion
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -20,11 +21,10 @@ class SolicitudesViewModel(application: Application) : AndroidViewModel(applicat
     val solicitudes: StateFlow<List<ReservaConSolicitante>> = repository.conSolicitante
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun aprobar(id: Int) {
-        viewModelScope.launch { repository.aprobar(id) }
+    fun aprobar(id: Int, resolutor: UsuarioSesion) {
+        viewModelScope.launch { repository.aprobar(id, resolutor) }
     }
-
-    fun rechazar(id: Int) {
-        viewModelScope.launch { repository.rechazar(id) }
+    fun rechazar(id: Int, resolutor: UsuarioSesion) {
+        viewModelScope.launch { repository.rechazar(id, resolutor) }
     }
 }

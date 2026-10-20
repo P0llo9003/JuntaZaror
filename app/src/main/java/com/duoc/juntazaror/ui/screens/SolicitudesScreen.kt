@@ -61,8 +61,8 @@ fun SolicitudesScreen(
                 items(solicitudes, key = { it.reserva.id }) { item ->
                     SolicitudCard(
                         item = item,
-                        onAprobar = { viewModel.aprobar(item.reserva.id) },
-                        onRechazar = { viewModel.rechazar(item.reserva.id) }
+                        onAprobar = { viewModel.aprobar(item.reserva.id, usuario) },
+                        onRechazar = { viewModel.rechazar(item.reserva.id, usuario) }
                     )
                 }
             }
