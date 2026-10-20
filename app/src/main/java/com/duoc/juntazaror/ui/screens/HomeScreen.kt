@@ -41,7 +41,7 @@ import com.duoc.juntazaror.R
 
 @Composable
 fun HomeScreen(
-    usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit, onRegistrarMovimiento: () -> Unit) {
+    usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit, onRegistrarMovimiento: () -> Unit, onCerrarSesion: () -> Unit) {
     if (usuario == null) return
 
     val destinos = remember(usuario.rol) { destinosPara(usuario.rol) }
@@ -66,7 +66,7 @@ fun HomeScreen(
                 AppDestinations.SOLICITUDES -> SolicitudesScreen(usuario)
                 AppDestinations.MOVIMIENTOS -> MovimientosScreen(usuario, onRegistrarMovimiento)
                 AppDestinations.TRANSPARENCIA -> TranspareciaScreen()
-                AppDestinations.PROFILE -> SeccionEnConstruccion("Perfil")
+                AppDestinations.PROFILE -> PerfilScreen(usuario, onCerrarSesion)
             }
         }
     }

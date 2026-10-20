@@ -1,46 +1,65 @@
 package com.duoc.juntazaror
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
-
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.duoc.juntazaror.notificaciones.Notificaciones
 import com.duoc.juntazaror.ui.screens.HomeScreen
 import com.duoc.juntazaror.ui.screens.LoginScreen
+import com.duoc.juntazaror.ui.screens.RegistrarMovimientoScreen
 import com.duoc.juntazaror.ui.screens.RegistroScreen
+import com.duoc.juntazaror.ui.screens.SolicitarArriendoScreen
 import com.duoc.juntazaror.ui.screens.UsuariosScreen
 import com.duoc.juntazaror.ui.theme.AppTheme
 import com.duoc.juntazaror.viewmodel.LoginViewModel
-import com.duoc.juntazaror.model.Rol
-import com.duoc.juntazaror.ui.screens.SolicitarArriendoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        Notificaciones.crearCanales(this)
+
         setContent {
             AppTheme {
+                val context = LocalContext.current
                 val nav = rememberNavController()
                 val loginViewModel: LoginViewModel = viewModel()
-                val nombreUsuario by loginViewModel.nombreUsuario.collectAsState()
                 val usuario by loginViewModel.usuario.collectAsState()
 
-                NavHost(navController = nav, startDestination = "login") {
+                val permisoNotificaciones = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { }
+                LaunchedEffect(Unit) {
+                    val concedido = ContextCompat.checkSelfPermission(
+                        context, Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+                    if (!concedido) {
+                        permisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
 
+                NavHost(navController = nav, startDestination = "login") {
                     composable("login") {
                         LoginScreen(
                             viewModel = loginViewModel,
                             onIrARegistro = { nav.navigate("registro") },
-                            onLoginExitoso = { rol ->
-                                val destino = "home"
-                                nav.navigate(destino) {
+                            onLoginExitoso = {
+                                nav.navigate("home") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
@@ -55,7 +74,13 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             usuario = usuario,
                             onSolicitarArriendo = { nav.navigate("solicitar_arriendo") },
-                            onRegistrarMovimiento = { nav.navigate("registrar_movimiento") }
+                            onRegistrarMovimiento = { nav.navigate("registrar_movimiento") },
+                            onCerrarSesion = {
+                                loginViewModel.cerrarSesion()
+                                nav.navigate("login") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                            }
                         )
                     }
 
@@ -70,6 +95,10 @@ class MainActivity : ComponentActivity() {
                                 onVolver = { nav.popBackStack() }
                             )
                         }
+                    }
+
+                    composable("registrar_movimiento") {
+                        RegistrarMovimientoScreen(onVolver = { nav.popBackStack() })
                     }
                 }
             }

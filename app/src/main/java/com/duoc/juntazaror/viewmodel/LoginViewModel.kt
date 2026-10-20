@@ -64,6 +64,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         _usuario.value = null
         _nombreUsuario.value = ""
         _login.value = LoginModel()
+        _errores.value = LoginErrores()
     }
     fun iniciarSesion(onExito: (Rol) -> Unit) {
         val datos = _login.value
