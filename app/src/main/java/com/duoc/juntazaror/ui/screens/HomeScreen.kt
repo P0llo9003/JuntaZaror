@@ -65,7 +65,7 @@ fun HomeScreen(
                 AppDestinations.ARRIENDOS -> ArriendosContent(usuario, onSolicitarArriendo)
                 AppDestinations.SOLICITUDES -> SolicitudesScreen(usuario)
                 AppDestinations.MOVIMIENTOS -> MovimientosScreen(usuario, onRegistrarMovimiento)
-                AppDestinations.TRANSPARENCIA -> SeccionEnConstruccion("Transparencia")
+                AppDestinations.TRANSPARENCIA -> TranspareciaScreen()
                 AppDestinations.PROFILE -> SeccionEnConstruccion("Perfil")
             }
         }

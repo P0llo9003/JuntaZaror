@@ -71,7 +71,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = errores.email != null,
-            supportingText = { errores.email?.let { Text(it) } }
+            supportingText = { errores.email?.let { MensajeError(it) } }
         )
 
         OutlinedTextField(

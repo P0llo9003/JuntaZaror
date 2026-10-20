@@ -92,7 +92,7 @@ fun RegistroScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = errores.name != null,
-            supportingText = { errores.name?.let { Text(it) } }
+            supportingText = { errores.name?.let { MensajeError(it) } }
         )
         OutlinedTextField(
             value = registro.email,
