@@ -4,8 +4,6 @@ Aplicación móvil Android para la **gestión de arriendos y la transparencia fi
 
 Proyecto de la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles**.
 
-> Todos los datos de la app son ficticios y tienen fines educativos.
-
 ---
 
 ##  Descripción
@@ -48,7 +46,7 @@ Cada usuario ve solo lo que le corresponde según su **rol**.
 - **Arquitectura:** MVVM (Model – ViewModel – Repository)
 - **Persistencia local:** Room 2.6.1 (SQLite) con KSP
 - **Navegación:** Navigation Compose + `NavigationSuiteScaffold`
-- **Imágenes:** Coil
+- **Imágenes (almac. local):** Coil
 - **Tipografía:** Poppins
 - **Build:** Gradle (Kotlin DSL), Android Gradle Plugin 8.12.3
 
@@ -91,7 +89,7 @@ app/src/main/java/com/duoc/juntazaror/
 
 ##  Usuarios de prueba
 
-Al abrir la app por primera vez se crean automáticamente dos cuentas de demostración:
+Al abrir la app por primera vez se crean automáticamente dos cuentas, una de Directiva y otra de Tesorería. Si se hace login con alguna de estas, se redirigirá al usuario a ua pantalla distinta, dependiendo el rol de la cuenta. Los usuarios con rol de vecino no puede acceder a estas:
 
 | Rol | Correo | Contraseña |
 |---|---|---|
@@ -106,16 +104,16 @@ Paleta de colores tierra:
 
 | Nombre | Color |
 |---|---|
-| Earth | `#A16D47` |
-| Sand | `#D8CABA` |
+| Earth(Tierra) | `#A16D47` |
+| Sand(Arena) | `#D8CABA` |
 | Latte | `#C0AD8D` |
-| Olive | `#776F4F` |
+| Olive(Oliva) | `#776F4F` |
 | Midnight | `#1D1D1D` |
 | Linen | `#F7F3EB` |
 
-El ícono de la app muestra tres casas (la comunidad) y una moneda con un check (la transparencia financiera).
+El ícono de la app fue pensado para representar un vecindario, por eso las casas reunidas, manteniendo la paleta de colores que se usa en la aplicación. Estos colores, así como la tipografía y los detalles en la animación de íconos, fueron elegidos para transmitir cierta tranquilidad, aire familiar, y ser ligero a la vista. 
 
-## 🛣️ Próximos pasos
+##  Próximos pasos
 
 - [ ] Integración con un microservicio propio en Spring Boot mediante Retrofit
 - [ ] Pruebas unitarias de ViewModels y repositorios
