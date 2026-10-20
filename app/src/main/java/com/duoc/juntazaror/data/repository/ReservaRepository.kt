@@ -35,4 +35,6 @@ class ReservaRepository(private val dao: ReservaDao) {
 
     private fun exigirDirectiva(usuario: UsuarioSesion) =
         require(usuario.rol == Rol.DIRECTIVA) { "Solo la directiva puede resolver solicitudes" }
+
+    fun bloquesOcupados(fecha: String): Flow<List<BloqueHorario>> = dao.observarBloquesOcupados(fecha)
 }

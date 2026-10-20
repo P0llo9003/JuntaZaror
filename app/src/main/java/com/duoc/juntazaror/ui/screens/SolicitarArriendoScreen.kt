@@ -68,6 +68,7 @@ fun SolicitarArriendoScreen(
     val guardada by viewModel.guardada.collectAsState()
     var mostrarCalendario by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val ocupados by viewModel.ocupados.collectAsState()
 
     LaunchedEffect(guardada) {
         if (guardada) {
@@ -75,6 +76,11 @@ fun SolicitarArriendoScreen(
             viewModel.confirmacionVista()
             onVolver()
         }
+    }
+
+    LaunchedEffect(ocupados, form.bloque) {
+        val elegido = form.bloque
+        if (elegido != null && elegido in ocupados) viewModel.limpiarBloque()
     }
 
     Column(
@@ -115,18 +121,29 @@ fun SolicitarArriendoScreen(
 
         Text("Horario", style = MaterialTheme.typography.titleMedium)
         BloqueHorario.entries.forEach { bloque ->
+            val ocupado = bloque in ocupados
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .selectable(
                         selected = form.bloque == bloque,
+                        enabled = !ocupado,
                         onClick = { viewModel.actualizarBloque(bloque) },
                         role = Role.RadioButton
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                RadioButton(selected = form.bloque == bloque, onClick = null)
-                Text(text = bloque.etiqueta, modifier = Modifier.padding(start = 8.dp))
+                RadioButton(
+                    selected = form.bloque == bloque,
+                    onClick = null,
+                    enabled = !ocupado
+                )
+                Text(
+                    text = if (ocupado) "${bloque.etiqueta} · Ocupado" else bloque.etiqueta,
+                    color = if (ocupado) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
             }
         }
         errores.bloque?.let { MensajeError(it) }

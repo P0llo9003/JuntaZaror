@@ -8,9 +8,16 @@ import com.duoc.juntazaror.data.local.AppDatabase
 import com.duoc.juntazaror.data.local.entity.Reserva
 import com.duoc.juntazaror.data.repository.ReservaRepository
 import com.duoc.juntazaror.model.BloqueHorario
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -46,6 +53,20 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
 
     private val _guardada = MutableStateFlow(false)
     val guardada: StateFlow<Boolean> = _guardada.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val ocupados: StateFlow<Set<BloqueHorario>> = _form
+        .map { it.fecha }
+        .distinctUntilChanged()
+        .flatMapLatest { fecha ->
+            if (fecha.isBlank()) flowOf(emptyList()) else repository.bloquesOcupados(fecha)
+        }
+        .map { it.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    fun limpiarBloque() {
+        _form.value = _form.value.copy(bloque = null)
+    }
 
     fun actualizarFecha(valor: String) {
         _form.value = _form.value.copy(fecha = valor)
@@ -141,7 +162,6 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
-    // La pantalla lo llama después de volver atrás o mostrar la confirmación
     fun confirmacionVista() {
         _guardada.value = false
     }
