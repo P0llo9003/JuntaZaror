@@ -100,7 +100,7 @@ fun RegistroScreen(
             label = { Text("Correo") },
             modifier = Modifier.fillMaxWidth(),
             isError = errores.email != null,
-            supportingText = { errores.email?.let { Text(it) } }
+            supportingText = { errores.email?.let { MensajeError(it) } }
         )
 
         OutlinedTextField(
@@ -123,7 +123,7 @@ fun RegistroScreen(
                 }
             },
             isError = errores.passwordHush != null,
-            supportingText = { errores.passwordHush?.let { Text(it) } }
+            supportingText = { errores.passwordHush?.let { MensajeError(it) } }
         )
 
         Row(

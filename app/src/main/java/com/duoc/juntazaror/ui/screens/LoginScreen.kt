@@ -94,7 +94,7 @@ fun LoginScreen(
                 }
             },
             isError = errores.passwordHush != null,
-            supportingText = { errores.passwordHush?.let { Text(it) } }
+            supportingText = { errores.passwordHush?.let { MensajeError(it) } }
         )
 
         errores.general?.let {
