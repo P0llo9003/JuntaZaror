@@ -195,7 +195,7 @@ fun SolicitarArriendoScreen(
                 TextButton(onClick = {
                     pickerState.selectedDateMillis?.let { millis ->
                         val fecha = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                        viewModel.actualizarFecha(fecha.toString())   // "2026-11-15"
+                        viewModel.actualizarFecha(fecha.toString())
                     }
                     mostrarCalendario = false
                 }) { Text("Aceptar") }

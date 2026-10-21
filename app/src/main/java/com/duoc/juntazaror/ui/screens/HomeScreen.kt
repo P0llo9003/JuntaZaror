@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.ui.graphics.graphicsLayer
 import com.duoc.juntazaror.R
 
@@ -57,7 +58,10 @@ fun HomeScreen(
                     onClick = { currentDestination = destino }
                 )
             }
-        }
+        },
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             when (currentDestination) {

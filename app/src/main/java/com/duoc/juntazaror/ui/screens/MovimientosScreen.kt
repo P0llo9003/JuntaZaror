@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,7 +82,7 @@ private fun MovimientoCard(movimiento: Movimiento) {
     val colorMonto = if (esIngreso) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
     val signo = if (esIngreso) "+" else "-"
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
