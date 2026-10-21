@@ -66,7 +66,6 @@ fun ComprobanteSelector(
         }
     }
 
-    // Solicita permiso si todavía no está concedido.
     val permisoCamaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { concedido ->
@@ -91,7 +90,6 @@ fun ComprobanteSelector(
         }
     }
 
-    // Comprueba el permiso antes de abrir la cámara.
     fun tomarFotografia() {
         val permisoConcedido = ContextCompat.checkSelfPermission(
             context,

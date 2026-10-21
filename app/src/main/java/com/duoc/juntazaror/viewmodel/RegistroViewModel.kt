@@ -33,6 +33,9 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
     private val _errores = MutableStateFlow(RegistroErrores())
     val errores: StateFlow<RegistroErrores> = _errores.asStateFlow()
 
+    private val _registrado = MutableStateFlow(false)
+    val registrado: StateFlow<Boolean> = _registrado.asStateFlow()
+
     fun actualizarNombre(valor: String) {
         _registro.value = _registro.value.copy(name = valor)
     }
@@ -101,12 +104,15 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
                 }
                 repository.save(datos.name, datos.email, datos.passwordHush, Rol.VECINO)
                 _registro.value = RegistroModel()
+                _registrado.value = true
             } catch (e: SQLiteConstraintException) {
                 _errores.value = _errores.value.copy(email = "Este correo ya está registrado")
             }
         }
     }
-
+    fun confirmacionVista() {
+        _registrado.value = false
+    }
 
 }
 

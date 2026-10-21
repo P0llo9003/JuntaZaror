@@ -17,8 +17,8 @@ import java.time.LocalDate
 data class MovimientoForm(
     val esIngreso: Boolean = true,
     val concepto: String = "",
-    val monto: String = "",              // texto, viene de un campo de texto
-    val fecha: String = "",              // "2026-11-15"
+    val monto: String = "",
+    val fecha: String = "",
     val adjuntaComprobante: Boolean = false,
     val comprobanteUri: Uri? = null
 )
@@ -71,7 +71,6 @@ class RegistrarMovimientoViewModel(application: Application) : AndroidViewModel(
         )
     }
 
-    // Mismas funciones que el ViewModel del profesor
     fun actualizarImagenDesdeGaleria(uri: Uri?) {
         if (uri != null) _form.value = _form.value.copy(comprobanteUri = uri)
     }
