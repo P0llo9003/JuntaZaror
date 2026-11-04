@@ -75,6 +75,8 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
             passwordHushError = "Debe ingresar una contraseña"
         } else if (datos.passwordHush.length < 4) {
             passwordHushError = "La contraseña debe tener al menos 4 caracteres"
+        } else if (!datos.passwordHush.any {!it.isLetterOrDigit()}) {
+            passwordHushError = "La contraseña debe tener al menos un caracter especial"
         }
 
         if (!datos.acceptTerms) {
