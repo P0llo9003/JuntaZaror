@@ -47,8 +47,7 @@ import com.duoc.juntazaror.viewmodel.LoginViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onIrARegistro: () -> Unit,
-    onLoginExitoso: (Rol) -> Unit
-) {
+    onLoginExitoso: (Rol) -> Unit) {
     val login by viewModel.login.collectAsState()
     val errores by viewModel.errores.collectAsState()
     var mostrarClave by rememberSaveable { mutableStateOf(false) }
@@ -122,5 +121,6 @@ fun LoginScreen(
                 Text("Crea una")
             }
         }
+
     }
 }
