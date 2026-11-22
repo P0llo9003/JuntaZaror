@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                                 nav.navigate("home") {
                                     popUpTo("login") { inclusive = true }
                                 }
-                            }
+                            },
                         )
                     }
 
@@ -100,8 +100,9 @@ class MainActivity : ComponentActivity() {
                     composable("registrar_movimiento") {
                         RegistrarMovimientoScreen(onVolver = { nav.popBackStack() })
                     }
+                    }
                 }
+
             }
         }
     }
-}
