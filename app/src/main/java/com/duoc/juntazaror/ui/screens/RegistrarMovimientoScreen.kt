@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.duoc.juntazaror.model.UsuarioSesion
 import com.duoc.juntazaror.ui.components.ComprobanteSelector
 import com.duoc.juntazaror.viewmodel.RegistrarMovimientoViewModel
 import java.time.Instant
@@ -54,6 +55,7 @@ import java.time.ZoneOffset
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrarMovimientoScreen(
+    usuario: UsuarioSesion,
     onVolver: () -> Unit,
     viewModel: RegistrarMovimientoViewModel = viewModel()
 ) {
@@ -110,7 +112,7 @@ fun RegistrarMovimientoScreen(
             value = form.concepto,
             onValueChange = { viewModel.actualizarConcepto(it) },
             label = { Text("Concepto") },
-            placeholder = { Text("Ej: Arriendo sede, Cuenta de luz") },
+            placeholder = { Text("Ej: Arriendo sede, Cuenta de luz...") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             isError = errores.concepto != null,
@@ -163,8 +165,10 @@ fun RegistrarMovimientoScreen(
             }
         }
 
+        errores.general?.let { MensajeError(it) }
+
         Button(
-            onClick = { viewModel.guardar() },
+            onClick = { viewModel.guardar(usuario.id) },
             enabled = !guardando,
             modifier = Modifier.fillMaxWidth()
         ) {

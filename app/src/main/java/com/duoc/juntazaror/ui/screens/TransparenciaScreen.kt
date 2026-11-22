@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.juntazaror.data.local.entity.Movimiento
+import com.duoc.juntazaror.remote.dto.MovimientoDto
 import com.duoc.juntazaror.model.TipoMovimiento
 import com.duoc.juntazaror.viewmodel.TransparenciaViewModel
 
@@ -31,6 +32,9 @@ private val VerdeIngreso = Color(0xFF2E7D32)
 fun TranspareciaScreen(viewModel: TransparenciaViewModel = viewModel()) {
     val resumen by viewModel.resumen.collectAsState()
     val movimientos by viewModel.movimientos.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     Column(
         modifier = Modifier
@@ -43,6 +47,7 @@ fun TranspareciaScreen(viewModel: TransparenciaViewModel = viewModel()) {
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(modifier = Modifier.height(16.dp))
+        error?.let { MensajeError(it) }
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             TarjetaResumen(
@@ -89,7 +94,7 @@ fun TranspareciaScreen(viewModel: TransparenciaViewModel = viewModel()) {
 @Composable
 private fun TarjetaResumen(
     titulo: String,
-    monto: Int,
+    monto: Long,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -106,7 +111,7 @@ private fun TarjetaResumen(
 }
 
 @Composable
-private fun FilaMovimiento(movimiento: Movimiento) {
+private fun FilaMovimiento(movimiento: MovimientoDto) {
     val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
 
     Card(modifier = Modifier.fillMaxWidth()) {

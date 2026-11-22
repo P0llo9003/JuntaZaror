@@ -3,32 +3,37 @@ package com.duoc.juntazaror.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.local.entity.Movimiento
-import com.duoc.juntazaror.data.repository.MovimientoRepository
-import kotlinx.coroutines.flow.SharingStarted
+import com.duoc.juntazaror.data.repository.MovimientoRemoteRepository
+import com.duoc.juntazaror.remote.dto.MovimientoDto
+import com.duoc.juntazaror.remote.dto.ResumenFinancieroDto
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-
-data class ResumenFinanciero(
-    val ingresos: Int = 0,
-    val gastos: Int = 0
-) {
-    val saldo: Int get() = ingresos - gastos
-}
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class TransparenciaViewModel(application: Application) : AndroidViewModel(application) {
+// ya no se usa room, paso a remoto.
+    private val repository = MovimientoRemoteRepository()
 
-    private val repository = MovimientoRepository(
-        AppDatabase.getInstance(application).movimientoDao()
-    )
+    private val _resumen = MutableStateFlow(ResumenFinancieroDto(0, 0, 0, 0))
+    val resumen: StateFlow<ResumenFinancieroDto> = _resumen.asStateFlow()//ahora, el resumen financiero no es una data classs local, sino que se usa un dto (de Dtos.kt)
 
-    val resumen: StateFlow<ResumenFinanciero> =
-        combine(repository.totalIngresos, repository.totalGastos) { ingresos, gastos ->
-            ResumenFinanciero(ingresos, gastos)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ResumenFinanciero())
+    private val _movimientos = MutableStateFlow<List<MovimientoDto>>(emptyList())
+    val movimientos: StateFlow<List<MovimientoDto>> = _movimientos.asStateFlow()
 
-    val movimientos: StateFlow<List<Movimiento>> = repository.movimientos
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    fun cargar() {
+        viewModelScope.launch {
+            repository.resumen()
+                .onSuccess { _resumen.value = it; _error.value = null }
+                .onFailure { _error.value = it.message }
+        }
+        viewModelScope.launch {
+            repository.listar()
+                .onSuccess { _movimientos.value = it }
+                .onFailure { _error.value = it.message }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package com.duoc.juntazaror.ui.screens
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +18,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,10 +30,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.duoc.juntazaror.data.local.entity.Movimiento
 import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.model.TipoMovimiento
 import com.duoc.juntazaror.model.UsuarioSesion
+import com.duoc.juntazaror.remote.dto.MovimientoDto
+import com.duoc.juntazaror.util.ComprobanteCodec
 import com.duoc.juntazaror.viewmodel.MovimientosViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -46,6 +48,9 @@ fun MovimientosScreen(
     if (usuario.rol != Rol.TESORERIA) return
 
     val movimientos by viewModel.movimientos.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     Column(
         modifier = Modifier
@@ -59,6 +64,7 @@ fun MovimientosScreen(
             Text("Registrar movimiento")
         }
         Spacer(modifier = Modifier.height(16.dp))
+        error?.let { MensajeError(it) }
 
         if (movimientos.isEmpty()) {
             Text("Aún no hay movimientos registrados")
@@ -76,7 +82,7 @@ fun MovimientosScreen(
 }
 
 @Composable
-private fun MovimientoCard(movimiento: Movimiento) {
+private fun MovimientoCard(movimiento: MovimientoDto) {//se usaa el dto.
     val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
     val colorMonto = if (esIngreso) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
     val signo = if (esIngreso) "+" else "-"
@@ -88,7 +94,7 @@ private fun MovimientoCard(movimiento: Movimiento) {
         ) {
             movimiento.comprobanteUri?.let { ruta ->
                 AsyncImage(
-                    model = Uri.parse(ruta),
+                    model = remember(ruta) { ComprobanteCodec.modeloParaImagen(ruta) },//el comprobante se muestra con la funcion de ComprobanteCodec
                     contentDescription = "Comprobante",
                     modifier = Modifier
                         .size(56.dp)
@@ -113,5 +119,7 @@ private fun MovimientoCard(movimiento: Movimiento) {
     }
 }
 
-fun formatearMonto(monto: Int): String =
+fun formatearMonto(monto: Int): String = formatearMonto(monto.toLong())
+
+fun formatearMonto(monto: Long): String =
     "$" + NumberFormat.getIntegerInstance(Locale("es", "CL")).format(monto)

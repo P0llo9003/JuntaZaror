@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.juntazaror.data.local.entity.Cuenta
+import com.duoc.juntazaror.remote.dto.CuentaDto
 import com.duoc.juntazaror.viewmodel.UsuariosViewModel
 
 @Composable
@@ -38,7 +39,10 @@ fun UsuariosScreen(
     viewModel: UsuariosViewModel = viewModel()
 ) {
     val cuentas by viewModel.cuentas.collectAsState()
-    var cuentaAEliminar by remember { mutableStateOf<Cuenta?>(null) }
+    val error by viewModel.error.collectAsState()
+    var cuentaAEliminar by remember { mutableStateOf<CuentaDto?>(null) }
+
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     Column(
         modifier = Modifier
@@ -50,6 +54,7 @@ fun UsuariosScreen(
             text = "Usuarios registrados (${cuentas.size})",
             style = MaterialTheme.typography.headlineMedium
         )
+        error?.let { MensajeError(it) }
         Spacer(modifier = Modifier.height(10.dp))
 
         if (cuentas.isEmpty()) {
@@ -65,7 +70,6 @@ fun UsuariosScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(cuenta.name, style = MaterialTheme.typography.titleMedium)
                                 Text(cuenta.email)
-                                Text(cuenta.password)
                                 Text("Rol: ${cuenta.rol}", style = MaterialTheme.typography.bodySmall)
                             }
                             IconButton(onClick = { cuentaAEliminar = cuenta }) {
@@ -86,7 +90,7 @@ fun UsuariosScreen(
         AlertDialog(
             onDismissRequest = { cuentaAEliminar = null },
             title = { Text("Eliminar usuario") },
-            text = { Text("¿Seguro que quieres eliminar a ${cuenta.name}? Esta acción no se puede deshacer.") },
+            text = { Text("¿Seguuuro que quieres eliminar a ${cuenta.name}? Esta acción no se puede deshacer.") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.eliminar(cuenta)

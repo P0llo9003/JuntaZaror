@@ -6,7 +6,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.juntazaror.data.repository.CuentaRemoteRepository
 import com.duoc.juntazaror.model.RegistroModel
-import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.remote.ApiException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +20,7 @@ data class RegistroErrores(
 )
 
 class RegistroViewModel(application: Application) : AndroidViewModel(application) {
-//se modificó para que no se comunique con Room, sino con Retrofit
+    //se modificó para que no se comunique con Room, sino con Retrofit
     private val repository = CuentaRemoteRepository()
 
     private val _registro = MutableStateFlow(RegistroModel())
@@ -94,8 +93,8 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
         if (!validarRegistro()) return
 
         val datos = _registro.value
-        viewModelScope.launch {
-            repository.registrar(datos.name, datos.email, datos.passwordHush, datos.phone, Rol.VECINO)
+        viewModelScope.launch {//del repositorio remoto:
+            repository.registrar(datos.name, datos.email, datos.passwordHush, datos.phone)
                 .onSuccess {
                     _registro.value = RegistroModel()
                     _registrado.value = true

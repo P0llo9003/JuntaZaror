@@ -1,13 +1,11 @@
 package com.duoc.juntazaror.viewmodel
 
 import android.app.Application
-import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.local.entity.Reserva
-import com.duoc.juntazaror.data.repository.ReservaRepository
+import com.duoc.juntazaror.data.repository.ReservaRemoteRepository
 import com.duoc.juntazaror.model.BloqueHorario
+import com.duoc.juntazaror.remote.ApiException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,9 +29,7 @@ data class SolicitudErrores(
 
 class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = ReservaRepository(
-        AppDatabase.getInstance(application).reservaDao()
-    )
+    private val repository = ReservaRemoteRepository()
 
     private val _form = MutableStateFlow(SolicitudForm())
     val form: StateFlow<SolicitudForm> = _form.asStateFlow()
@@ -110,33 +106,42 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
     }
 
     fun guardar(cuentaId: Int) {
+        if (_guardando.value) return
         if (!validarSolicitud()) return
 
         val datos = _form.value
         val bloque = datos.bloque ?: return
 
-
+        _guardando.value = true
         viewModelScope.launch {
             try {
-                if (!repository.estaDisponible(datos.fecha, bloque)) {
-                    _errores.value = _errores.value.copy(
-                        general = "Esa fecha y horario ya están reservados. Prueba con otro."
-                    )
+                // chequeo previo de disponibilidad (el backend igual responde 409 si el bloque se ocupó).
+                val libre = repository.estaDisponible(datos.fecha, bloque).getOrElse { e ->
+                    _errores.value = _errores.value.copy(general = e.message)
                     return@launch
                 }
+                if (!libre) {
+                    _errores.value = _errores.value.copy(general = MENSAJE_OCUPADO)
+                    return@launch
+                }
+
                 repository.solicitar(
-                    Reserva(
-                        cuentaId = cuentaId,
-                        fecha = datos.fecha,
-                        bloque = bloque,
-                        motivo = datos.motivo.trim(),
-                        cantidadPersonas = datos.personas.toInt()
-                    )
+                    cuentaId = cuentaId.toLong(),
+                    fecha = datos.fecha,
+                    bloque = bloque,
+                    motivo = datos.motivo,
+                    cantidadPersonas = datos.personas.toInt()
                 )
-                _form.value = SolicitudForm()
-                _guardada.value = true
-            } catch (e: SQLiteConstraintException) {
-                _errores.value = _errores.value.copy(general = "Hubo un error inesperado")
+                    .onSuccess {
+                        _form.value = SolicitudForm()
+                        _guardada.value = true
+                    }
+                    .onFailure { e ->
+                        val mensaje = if ((e as? ApiException)?.code == 409) MENSAJE_OCUPADO else e.message
+                        _errores.value = _errores.value.copy(general = mensaje ?: "Hubo un error inesperado :(")
+                    }
+            } finally {
+                _guardando.value = false
             }
         }
     }
@@ -147,5 +152,6 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
 
     companion object {
         const val MAX_PERSONAS = 100
+        private const val MENSAJE_OCUPADO = "Esa fecha y horario ya están reservados!! Prueba con otro"
     }
 }
