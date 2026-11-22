@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -90,7 +91,7 @@ fun TranspareciaScreen(viewModel: TransparenciaViewModel = viewModel()) {
     }
 }
 
-
+// Transparencia Financiera
 @Composable
 private fun TarjetaResumen(
     titulo: String,
@@ -98,7 +99,7 @@ private fun TarjetaResumen(
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    Card(modifier = modifier) {
+    Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(modifier = Modifier.padding(16.dp)){
             Text(titulo, style = MaterialTheme.typography.labelLarge)
             Text(
@@ -110,11 +111,12 @@ private fun TarjetaResumen(
     }
 }
 
+// Movimientos
 @Composable
 private fun FilaMovimiento(movimiento: MovimientoDto) {
     val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
