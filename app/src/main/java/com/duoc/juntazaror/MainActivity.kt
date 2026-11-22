@@ -98,11 +98,16 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("registrar_movimiento") {
-                        RegistrarMovimientoScreen(onVolver = { nav.popBackStack() })
-                    }
+                        usuario?.let {
+                            RegistrarMovimientoScreen(
+                                usuario = it,
+                                onVolver = { nav.popBackStack() }
+                            )
+                        }
                     }
                 }
-
             }
+
         }
     }
+}

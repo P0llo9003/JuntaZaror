@@ -4,10 +4,9 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.local.entity.Movimiento
-import com.duoc.juntazaror.data.repository.MovimientoRepository
+import com.duoc.juntazaror.data.repository.MovimientoRemoteRepository
 import com.duoc.juntazaror.model.TipoMovimiento
+import com.duoc.juntazaror.util.ComprobanteCodec
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,14 +26,13 @@ data class MovimientoErrores(
     val concepto: String? = null,
     val monto: String? = null,
     val fecha: String? = null,
-    val comprobante: String? = null
+    val comprobante: String? = null,
+    val general: String? = null //nuevo campo
 )
 
 class RegistrarMovimientoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovimientoRepository(
-        AppDatabase.getInstance(application).movimientoDao()
-    )
+    private val repository = MovimientoRemoteRepository()
 
     private val _form = MutableStateFlow(MovimientoForm())
     val form: StateFlow<MovimientoForm> = _form.asStateFlow()
@@ -123,7 +121,7 @@ class RegistrarMovimientoViewModel(application: Application) : AndroidViewModel(
         return nuevosErrores == MovimientoErrores()
     }
 
-    fun guardar() {
+    fun guardar(registradoPorId: Int) {
         if (_guardando.value) return
         if (!validarMovimiento()) return
 
@@ -131,17 +129,31 @@ class RegistrarMovimientoViewModel(application: Application) : AndroidViewModel(
         _guardando.value = true
         viewModelScope.launch {
             try {
+                //se convierte el comprobante a un jpeg base 64
+                val comprobante = datos.comprobanteUri?.let { uri ->
+                    ComprobanteCodec.uriABase64(getApplication<Application>(), uri) ?: run {
+                        _errores.value = _errores.value.copy(
+                            comprobante = "No se pudo leer la imagen del comprobante :c "
+                        )
+                        return@launch
+                    }
+                }
+
                 repository.registrar(
-                    Movimiento(
-                        tipo = if (datos.esIngreso) TipoMovimiento.INGRESO else TipoMovimiento.GASTO,
-                        concepto = datos.concepto.trim(),
-                        monto = datos.monto.toInt(),
-                        fecha = datos.fecha,
-                        comprobanteUri = datos.comprobanteUri?.toString()
-                    )
+                    tipo = if (datos.esIngreso) TipoMovimiento.INGRESO else TipoMovimiento.GASTO,
+                    concepto = datos.concepto,
+                    monto = datos.monto.toInt(),
+                    fecha = datos.fecha,
+                    comprobanteUri = comprobante,
+                    registradoPorId = registradoPorId.toLong()
                 )
-                _form.value = MovimientoForm()
-                _guardado.value = true
+                    .onSuccess {
+                        _form.value = MovimientoForm()
+                        _guardado.value = true
+                    }
+                    .onFailure { e ->
+                        _errores.value = _errores.value.copy(general = e.message ?: "Hubo un error inesperado :((")
+                    }
             } finally {
                 _guardando.value = false
             }

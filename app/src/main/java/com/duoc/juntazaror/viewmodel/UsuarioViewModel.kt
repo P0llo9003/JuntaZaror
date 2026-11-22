@@ -3,28 +3,36 @@ package com.duoc.juntazaror.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.local.entity.Cuenta
-import com.duoc.juntazaror.data.repository.CuentaRepository
-import kotlinx.coroutines.flow.SharingStarted
+import com.duoc.juntazaror.data.repository.CuentaRemoteRepository
+import com.duoc.juntazaror.remote.dto.CuentaDto
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class UsuariosViewModel(application: Application) : AndroidViewModel(application) {
+// pasó a remoto
+    private val repository = CuentaRemoteRepository()
 
-    private val repository = CuentaRepository(
-        AppDatabase.getInstance(application).cuentaDao()
-    )
+    private val _cuentas = MutableStateFlow<List<CuentaDto>>(emptyList())
+    val cuentas: StateFlow<List<CuentaDto>> = _cuentas.asStateFlow()
 
-    val cuentas: StateFlow<List<Cuenta>> = repository.cuentas
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
-    )
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-
-    fun eliminar(cuenta: Cuenta) {
+    fun cargar() {
         viewModelScope.launch {
-            repository.delete(cuenta)
+            repository.listar()
+                .onSuccess { _cuentas.value = it; _error.value = null }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun eliminar(cuenta: CuentaDto) {
+        viewModelScope.launch {
+            repository.eliminar(cuenta.id)
+                .onSuccess { cargar() }
+                .onFailure { _error.value = it.message }
         }
     }
 }

@@ -14,17 +14,17 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.juntazaror.data.local.entity.Reserva
 import com.duoc.juntazaror.model.EstadoReserva
 import com.duoc.juntazaror.model.UsuarioSesion
+import com.duoc.juntazaror.remote.dto.ReservaDto
 import com.duoc.juntazaror.viewmodel.MisSolicitudesViewModel
 @Composable
 fun MisSolicitudesLista(
@@ -32,12 +32,16 @@ fun MisSolicitudesLista(
     modifier: Modifier = Modifier,
     viewModel: MisSolicitudesViewModel = viewModel()
 ) {
-    val flujo = remember(usuario.id) { viewModel.solicitudesDe(usuario.id) }
-    val solicitudes by flujo.collectAsState(initial = emptyList())
+    val solicitudes by viewModel.solicitudes.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(usuario.id) { viewModel.cargar(usuario.id) }
 
     Column(modifier = modifier) {
         Text("Mis solicitudes", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(8.dp))
+
+        error?.let { MensajeError(it) }
 
         if (solicitudes.isEmpty()) {
             Text("Aún no has hecho solicitudes")
@@ -55,11 +59,11 @@ fun MisSolicitudesLista(
 }
 
 @Composable
-private fun MiSolicitudCard(reserva: Reserva) {
+private fun MiSolicitudCard(reserva: ReservaDto) {//se usa el dto.
     val mensaje = when (reserva.estado) {
-        EstadoReserva.PENDIENTE -> "Esperando respuesta de la Directiva"
-        EstadoReserva.CONFIRMADA -> "Tu arriendo fue aprobado"
-        EstadoReserva.RECHAZADA -> "Fue rechazada. Puedes pedir otra fecha u horario"
+        EstadoReserva.PENDIENTE -> "Esperando respuesta de la Directiva ..."
+        EstadoReserva.CONFIRMADA -> "Tu arriendo fue aprobado!! :D"
+        EstadoReserva.RECHAZADA -> "Fue rechazada :(. Puedes pedir otra fecha u horario"
     }
 
     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
