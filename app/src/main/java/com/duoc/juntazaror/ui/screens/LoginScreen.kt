@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -45,8 +47,7 @@ import com.duoc.juntazaror.viewmodel.LoginViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onIrARegistro: () -> Unit,
-    onLoginExitoso: (Rol) -> Unit
-) {
+    onLoginExitoso: (Rol) -> Unit) {
     val login by viewModel.login.collectAsState()
     val errores by viewModel.errores.collectAsState()
     var mostrarClave by rememberSaveable { mutableStateOf(false) }
@@ -54,6 +55,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .systemBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -71,7 +74,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = errores.email != null,
-            supportingText = { errores.email?.let { Text(it) } }
+            supportingText = { errores.email?.let { MensajeError(it) } }
         )
 
         OutlinedTextField(
@@ -94,7 +97,7 @@ fun LoginScreen(
                 }
             },
             isError = errores.passwordHush != null,
-            supportingText = { errores.passwordHush?.let { Text(it) } }
+            supportingText = { errores.passwordHush?.let { MensajeError(it) } }
         )
 
         errores.general?.let {
@@ -118,5 +121,6 @@ fun LoginScreen(
                 Text("Crea una")
             }
         }
+
     }
 }

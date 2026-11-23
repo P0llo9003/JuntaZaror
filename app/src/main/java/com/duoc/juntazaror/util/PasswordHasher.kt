@@ -27,7 +27,7 @@ object PasswordHasher {
             val esperado = Base64.getDecoder().decode(partes[2])
             val calculado = derivar(clave, salt, iteraciones)
             MessageDigest.isEqual(esperado, calculado)
-        }catch(e: IllegalStateException){
+        }catch(e: IllegalArgumentException){
             false
         }
     }

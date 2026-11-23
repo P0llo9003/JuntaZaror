@@ -35,12 +35,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.ui.graphics.graphicsLayer
 import com.duoc.juntazaror.R
 
 
 @Composable
-fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
+fun HomeScreen(
+    usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit, onRegistrarMovimiento: () -> Unit, onCerrarSesion: () -> Unit) {
     if (usuario == null) return
 
     val destinos = remember(usuario.rol) { destinosPara(usuario.rol) }
@@ -56,16 +58,19 @@ fun HomeScreen(usuario: UsuarioSesion?, onSolicitarArriendo: () -> Unit) {
                     onClick = { currentDestination = destino }
                 )
             }
-        }
+        },
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             when (currentDestination) {
                 AppDestinations.HOME -> InicioContent(usuario)
                 AppDestinations.ARRIENDOS -> ArriendosContent(usuario, onSolicitarArriendo)
                 AppDestinations.SOLICITUDES -> SolicitudesScreen(usuario)
-                AppDestinations.MOVIMIENTOS -> SeccionEnConstruccion("Movimientos")
-                AppDestinations.TRANSPARENCIA -> SeccionEnConstruccion("Transparencia")
-                AppDestinations.PROFILE -> SeccionEnConstruccion("Perfil")
+                AppDestinations.MOVIMIENTOS -> MovimientosScreen(usuario, onRegistrarMovimiento)
+                AppDestinations.TRANSPARENCIA -> TranspareciaScreen()
+                AppDestinations.PROFILE -> PerfilScreen(usuario, onCerrarSesion)
             }
         }
     }

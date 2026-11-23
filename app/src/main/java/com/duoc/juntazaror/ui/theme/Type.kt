@@ -41,6 +41,10 @@ val Typography = Typography(
     bodySmall      = base.bodySmall.copy(fontFamily = Poppins),
 
     labelLarge     = base.labelLarge.copy(fontFamily = Poppins),
-    labelMedium    = base.labelMedium.copy(fontFamily = Poppins),
+    labelMedium = base.labelMedium.copy(
+        fontFamily = Poppins,
+        fontSize = 11.sp,
+        lineHeight = 16.sp
+    ),
     labelSmall     = base.labelSmall.copy(fontFamily = Poppins)
 )

@@ -2,20 +2,18 @@ package com.duoc.juntazaror.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.repository.CuentaRepository
-import com.duoc.juntazaror.model.Rol
-import android.util.Patterns
 import androidx.lifecycle.viewModelScope
+import com.duoc.juntazaror.data.repository.CuentaRemoteRepository
 import com.duoc.juntazaror.model.LoginModel
+import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.model.UsuarioSesion
-import com.duoc.juntazaror.util.PasswordHasher
-import kotlinx.coroutines.Dispatchers
+import com.duoc.juntazaror.notificaciones.NotificadorReservas
+import com.duoc.juntazaror.remote.ApiException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 data class LoginErrores(
     val email: String? = null,
@@ -25,9 +23,7 @@ data class LoginErrores(
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = CuentaRepository(
-        AppDatabase.getInstance(application).cuentaDao()
-    )
+    private val repository = CuentaRemoteRepository()
 
     private val _login = MutableStateFlow(LoginModel())
     val login: StateFlow<LoginModel> = _login.asStateFlow()
@@ -35,11 +31,17 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _errores = MutableStateFlow(LoginErrores())
     val errores: StateFlow<LoginErrores> = _errores.asStateFlow()
 
+    private val _cargando = MutableStateFlow(false)
+    val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
+
     private val _nombreUsuario = MutableStateFlow("")
     val nombreUsuario: StateFlow<String> = _nombreUsuario.asStateFlow()
 
     private val _usuario = MutableStateFlow<UsuarioSesion?>(null)
     val usuario: StateFlow<UsuarioSesion?> = _usuario.asStateFlow()
+
+    private val notificador = NotificadorReservas(application)
+    private var jobNotificaciones: Job? = null
 
     fun actualizarCorreo(valor: String) {
         _login.value = _login.value.copy(email = valor)
@@ -49,7 +51,23 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         _login.value = _login.value.copy(passwordHush = valor)
     }
 
+    private fun iniciarNotificaciones(usuario: UsuarioSesion) {
+        jobNotificaciones?.cancel()
+        jobNotificaciones = viewModelScope.launch { notificador.escuchar(usuario) }
+    }
+
+    fun cerrarSesion() {
+        jobNotificaciones?.cancel()
+        jobNotificaciones = null
+        _usuario.value = null
+        _nombreUsuario.value = ""
+        _login.value = LoginModel()
+        _errores.value = LoginErrores()
+    }
+
     fun iniciarSesion(onExito: (Rol) -> Unit) {
+        if (_cargando.value) return          // evita doble toque mientras hay una llamada en curso
+
         val datos = _login.value
         val emailError = if (datos.email.isBlank()) "El correo es obligatorio" else null
         val claveError = if (datos.passwordHush.isBlank()) "Debe ingresar su contraseña" else null
@@ -58,19 +76,24 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         if (emailError != null || claveError != null) return
 
         viewModelScope.launch {
-            val cuenta = repository.buscarPorEmail(datos.email)
-            val claveCorrecta = cuenta != null && withContext(Dispatchers.Default) {
-                PasswordHasher.verificar(datos.passwordHush, cuenta.password)
-            }
-
-            if (cuenta == null || !claveCorrecta) {
-                _errores.value = LoginErrores(general = "Correo o contraseña incorrectos")
-                return@launch
-            }
-
-            _nombreUsuario.value = cuenta.name
-            _usuario.value = UsuarioSesion(cuenta.id, cuenta.name, cuenta.email, cuenta.rol)
-            onExito(cuenta.rol)
+            _cargando.value = true
+            repository.login(datos.email, datos.passwordHush)
+                .onSuccess { cuenta ->
+                    val sesion = UsuarioSesion(cuenta.id.toInt(), cuenta.name, cuenta.email, cuenta.rol)
+                    _nombreUsuario.value = cuenta.name
+                    _usuario.value = sesion
+                    iniciarNotificaciones(sesion)
+                    onExito(cuenta.rol)
+                }
+                .onFailure { e ->
+                    val mensaje = when ((e as? ApiException)?.code) {
+                        401, 404 -> "Correo o contraseña incorrectos"
+                        0 -> "No se pudo conectar con el servidor"
+                        else -> e.message ?: "Error inesperado"
+                    }
+                    _errores.value = LoginErrores(general = mensaje)
+                }
+            _cargando.value = false
         }
     }
 }

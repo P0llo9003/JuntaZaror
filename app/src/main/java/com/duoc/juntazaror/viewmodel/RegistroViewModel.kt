@@ -1,14 +1,12 @@
 package com.duoc.juntazaror.viewmodel
 
 import android.app.Application
-import android.database.sqlite.SQLiteConstraintException
 import android.util.Patterns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.juntazaror.data.local.AppDatabase
-import com.duoc.juntazaror.data.repository.CuentaRepository
+import com.duoc.juntazaror.data.repository.CuentaRemoteRepository
 import com.duoc.juntazaror.model.RegistroModel
-import com.duoc.juntazaror.model.Rol
+import com.duoc.juntazaror.remote.ApiException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,16 +20,17 @@ data class RegistroErrores(
 )
 
 class RegistroViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = CuentaRepository(
-        AppDatabase.getInstance(application).cuentaDao()
-    )
+    //se modificó para que no se comunique con Room, sino con Retrofit
+    private val repository = CuentaRemoteRepository()
 
     private val _registro = MutableStateFlow(RegistroModel())
     val registro: StateFlow<RegistroModel> = _registro.asStateFlow()
 
     private val _errores = MutableStateFlow(RegistroErrores())
     val errores: StateFlow<RegistroErrores> = _errores.asStateFlow()
+
+    private val _registrado = MutableStateFlow(false)
+    val registrado: StateFlow<Boolean> = _registrado.asStateFlow()
 
     fun actualizarNombre(valor: String) {
         _registro.value = _registro.value.copy(name = valor)
@@ -72,19 +71,20 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
             passwordHushError = "Debe ingresar una contraseña"
         } else if (datos.passwordHush.length < 4) {
             passwordHushError = "La contraseña debe tener al menos 4 caracteres"
+        } else if (!datos.passwordHush.any { !it.isLetterOrDigit() }) {
+            passwordHushError = "La contraseña debe tener al menos un caracter especial"
         }
 
         if (!datos.acceptTerms) {
             termsError = "Debe aceptar los terminos y condiciones"
         }
 
-        val nuevosErrores =
-            RegistroErrores(
-                name = nameError,
-                email = emailError,
-                passwordHush = passwordHushError,
-                acceptTerms = termsError
-            )
+        val nuevosErrores = RegistroErrores(
+            name = nameError,
+            email = emailError,
+            passwordHush = passwordHushError,
+            acceptTerms = termsError
+        )
         _errores.value = nuevosErrores
         return nuevosErrores == RegistroErrores()
     }
@@ -93,21 +93,24 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
         if (!validarRegistro()) return
 
         val datos = _registro.value
-        viewModelScope.launch {
-            try {
-                if (repository.buscarPorEmail(datos.email) != null) {
-                    _errores.value = _errores.value.copy(email = "Este correo ya está registrado")
-                    return@launch
+        viewModelScope.launch {//del repositorio remoto:
+            repository.registrar(datos.name, datos.email, datos.passwordHush, datos.phone)
+                .onSuccess {
+                    _registro.value = RegistroModel()
+                    _registrado.value = true
                 }
-                repository.save(datos.name, datos.email, datos.passwordHush, Rol.VECINO)
-                _registro.value = RegistroModel()
-            } catch (e: SQLiteConstraintException) {
-                _errores.value = _errores.value.copy(email = "Este correo ya está registrado")
-            }
+                .onFailure { e ->
+                    val mensaje = if ((e as? ApiException)?.code == 409) {
+                        "Este correo ya está registrado"
+                    } else {
+                        e.message
+                    }
+                    _errores.value = _errores.value.copy(email = mensaje)
+                }
         }
     }
 
-
+    fun confirmacionVista() {
+        _registrado.value = false
+    }
 }
-
-

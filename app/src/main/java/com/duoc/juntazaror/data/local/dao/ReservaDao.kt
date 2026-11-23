@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.duoc.juntazaror.data.local.entity.Reserva
 import com.duoc.juntazaror.data.local.entity.ReservaConSolicitante
+import com.duoc.juntazaror.model.BloqueHorario
 import com.duoc.juntazaror.model.EstadoReserva
 import kotlinx.coroutines.flow.Flow
 
@@ -41,4 +42,7 @@ interface ReservaDao {
 
     @Query("UPDATE reservas SET estado = :estado WHERE id = :id AND estado = 'PENDIENTE'")
     suspend fun cambiarEstado(id: Int, estado: EstadoReserva)
+
+    @Query("SELECT bloque FROM reservas WHERE fecha = :fecha AND estado <> 'RECHAZADA'")
+    fun observarBloquesOcupados(fecha: String): Flow<List<BloqueHorario>>
 }

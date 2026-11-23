@@ -12,10 +12,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,10 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.graphics.Color
-import com.duoc.juntazaror.data.local.entity.ReservaConSolicitante
 import com.duoc.juntazaror.model.EstadoReserva
 import com.duoc.juntazaror.model.Rol
 import com.duoc.juntazaror.model.UsuarioSesion
+import com.duoc.juntazaror.remote.dto.ReservaDto
 import com.duoc.juntazaror.viewmodel.SolicitudesViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -40,7 +42,10 @@ fun SolicitudesScreen(
     if (usuario.rol != Rol.DIRECTIVA) return
 
     val solicitudes by viewModel.solicitudes.collectAsState()
-    val pendientes = solicitudes.count { it.reserva.estado == EstadoReserva.PENDIENTE }
+    val error by viewModel.error.collectAsState()
+    val pendientes = solicitudes.count { it.estado == EstadoReserva.PENDIENTE }
+
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     Column(
         modifier = Modifier
@@ -52,17 +57,18 @@ fun SolicitudesScreen(
             style = MaterialTheme.typography.headlineMedium
         )
         Text(text = "$pendientes pendientes")
+        error?.let { MensajeError(it) }
         Spacer(modifier = Modifier.height(10.dp))
 
         if (solicitudes.isEmpty()) {
             Text("Aún no hay solicitudes")
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(solicitudes, key = { it.reserva.id }) { item ->
+                items(solicitudes, key = { it.id }) { reserva ->
                     SolicitudCard(
-                        item = item,
-                        onAprobar = { viewModel.aprobar(item.reserva.id) },
-                        onRechazar = { viewModel.rechazar(item.reserva.id) }
+                        reserva = reserva,
+                        onAprobar = { viewModel.aprobar(reserva.id, usuario) },
+                        onRechazar = { viewModel.rechazar(reserva.id, usuario) }
                     )
                 }
             }
@@ -72,12 +78,10 @@ fun SolicitudesScreen(
 
 @Composable
 private fun SolicitudCard(
-    item: ReservaConSolicitante,
+    reserva: ReservaDto, //se usa el dto directamente
     onAprobar: () -> Unit,
     onRechazar: () -> Unit
 ) {
-    val reserva = item.reserva
-
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -85,7 +89,7 @@ private fun SolicitudCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = item.solicitante,
+                    text = reserva.solicitante ?: "Cuenta #${reserva.cuentaId}",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
@@ -114,7 +118,7 @@ private fun SolicitudCard(
 fun EstadoEtiqueta(estado: EstadoReserva) {
     val (texto, color) = when (estado) {
         EstadoReserva.PENDIENTE -> "Pendiente" to MaterialTheme.colorScheme.tertiary
-        EstadoReserva.CONFIRMADA -> "Confirmada" to Color(0xFF66BB6A) //TODO Crear una ruta para el color en vez de llamar al codigo de color de una
+        EstadoReserva.CONFIRMADA -> "Confirmada" to Color(0xFF66BB6A) //no hay parametro de material 3 que sea un "success" o similar... mejor que quede asi jsddlk.
         EstadoReserva.RECHAZADA -> "Rechazada" to MaterialTheme.colorScheme.error
     }
     Text(text = texto, color = color, style = MaterialTheme.typography.labelLarge)
