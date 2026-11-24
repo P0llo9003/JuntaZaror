@@ -30,9 +30,13 @@ data class MovimientoErrores(
     val general: String? = null //nuevo campo
 )
 
-class RegistrarMovimientoViewModel(application: Application) : AndroidViewModel(application) {
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class RegistrarMovimientoViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: MovimientoRemoteRepository = MovimientoRemoteRepository()
+) : AndroidViewModel(application) {
 
-    private val repository = MovimientoRemoteRepository()
 
     private val _form = MutableStateFlow(MovimientoForm())
     val form: StateFlow<MovimientoForm> = _form.asStateFlow()

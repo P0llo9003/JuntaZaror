@@ -1,7 +1,6 @@
 package com.duoc.juntazaror.viewmodel
 
 import android.app.Application
-import android.util.Patterns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.juntazaror.data.repository.CuentaRemoteRepository
@@ -19,9 +18,12 @@ data class RegistroErrores(
     val acceptTerms: String? = null
 )
 
-class RegistroViewModel(application: Application) : AndroidViewModel(application) {
-    //se modificó para que no se comunique con Room, sino con Retrofit
-    private val repository = CuentaRemoteRepository()
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class RegistroViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: CuentaRemoteRepository = CuentaRemoteRepository()
+) : AndroidViewModel(application) {
 
     private val _registro = MutableStateFlow(RegistroModel())
     val registro: StateFlow<RegistroModel> = _registro.asStateFlow()
@@ -63,7 +65,7 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
 
         if (datos.email.isBlank()) {
             emailError = "El correo es obligatorio"
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(datos.email).matches()) {
+        } else if (!EMAIL_REGEX.matches(datos.email)) {
             emailError = "Ingresa un correo valido"
         }
 
@@ -112,5 +114,10 @@ class RegistroViewModel(application: Application) : AndroidViewModel(application
 
     fun confirmacionVista() {
         _registrado.value = false
+    }
+
+    companion object {
+        // Reemplaza a android.util.Patterns.EMAIL_ADDRESS, que no funciona en pruebas unitarias (JVM).
+        private val EMAIL_REGEX = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     }
 }

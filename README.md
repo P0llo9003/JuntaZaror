@@ -87,6 +87,32 @@ app/src/main/java/com/duoc/juntazaror/
 3. Selecciona un emulador o dispositivo y presiona **Run ▶**.
 4. Acepta el permiso de notificaciones cuando la app lo pida.
 
+##  Pruebas unitarias
+
+Estrategia de testing híbrido (Guía 15):
+
+| Tipo | Carpeta | Herramientas | Qué se prueba |
+|---|---|---|---|
+| Unitarias (lógica) | `app/src/test` | Kotest + MockK + kotlinx-coroutines-test (JUnit 5) | `LoginViewModel`, `SolicitarArriendoViewModel` (flujo completo de reserva) y `CuentaRemoteRepository` |
+| UI | `app/src/androidTest` | JUnit 4 + Compose UI Test | `LoginScreen` (errores de validación) |
+
+Los ViewModels y repositorios reciben sus dependencias por constructor, así en las pruebas se reemplaza el backend por mocks de MockK y no se necesita red.
+
+**Ejecutar las pruebas unitarias:**
+```bash
+./gradlew testDebugUnitTest
+```
+
+**Reporte de cobertura (Kover):**
+```bash
+./gradlew koverHtmlReportDebug   # reporte en app/build/reports/kover/htmlDebug/index.html
+```
+
+**Pruebas de UI** (requieren emulador o celular conectado):
+```bash
+./gradlew connectedDebugAndroidTest
+```
+
 ##  Usuarios de prueba
 
 Al abrir la app por primera vez se crean automáticamente dos cuentas, una de Directiva y otra de Tesorería. Si se hace login con alguna de estas, se redirigirá al usuario a ua pantalla distinta, dependiendo el rol de la cuenta. Los usuarios con rol de vecino no puede acceder a estas:
@@ -116,7 +142,7 @@ El ícono de la app fue pensado para representar un vecindario, por eso las casa
 ##  Próximos pasos
 
 - [ ] Integración con un microservicio propio en Spring Boot mediante Retrofit
-- [ ] Pruebas unitarias de ViewModels y repositorios
+- [x] Pruebas unitarias de ViewModels y repositorios
 - [ ] Generación del APK firmado en modo release
 - [ ] Entre otros...
 

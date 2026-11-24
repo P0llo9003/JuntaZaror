@@ -1,5 +1,6 @@
 package com.duoc.juntazaror.viewmodel
 
+import com.duoc.juntazaror.data.repository.FeriadoRepository
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,9 +35,12 @@ data class SolicitudErrores(
     val general: String? = null
 )
 
-class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(application) {
+class SolicitarArriendoViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: ReservaRemoteRepository = ReservaRemoteRepository(),
+    private val feriadoRepository: FeriadoRepository = FeriadoRepository()
+) : AndroidViewModel(application) {
 
-    private val repository = ReservaRemoteRepository()
 
     private val _form = MutableStateFlow(SolicitudForm())
     val form: StateFlow<SolicitudForm> = _form.asStateFlow()
@@ -60,6 +64,35 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
         .map { it.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
+
+    // ---------- API externa: feriados ----------
+    private val _feriados = MutableStateFlow<Map<String, String>>(emptyMap())
+    val feriados: StateFlow<Map<String, String>> = _feriados.asStateFlow()
+
+    private val _errorFeriados = MutableStateFlow(false)
+    val errorFeriados: StateFlow<Boolean> = _errorFeriados.asStateFlow()
+
+    init {
+        cargarFeriados()
+    }
+
+    // Carga los feriados de este año y del siguiente
+    fun cargarFeriados() {
+        val anio = LocalDate.now().year
+        viewModelScope.launch {
+            val mapa = mutableMapOf<String, String>()
+            var hayError = false
+            for (a in listOf(anio, anio + 1)) {
+                feriadoRepository.feriadosDe(a)
+                    .onSuccess { lista -> lista.forEach { mapa[it.date] = it.localName } }
+                    .onFailure { hayError = true }
+            }
+            _feriados.value = mapa
+            _errorFeriados.value = hayError && mapa.isEmpty()
+        }
+    }
+
+    fun feriadoEn(fecha: String): String? = _feriados.value[fecha]
     fun limpiarBloque() {
         _form.value = _form.value.copy(bloque = null)
     }
@@ -94,6 +127,10 @@ class SolicitarArriendoViewModel(application: Application) : AndroidViewModel(ap
             fechaError = "Fecha inválida"
         } else if (fecha.isBefore(LocalDate.now())) {
             fechaError = "La fecha no puede ser anterior a hoy"
+        } else {
+            feriadoEn(datos.fecha)?.let { nombre ->
+                fechaError = "Es feriado ($nombre). La sede no se arrienda en feriados"
+            }
         }
 
         if (datos.bloque == null) {

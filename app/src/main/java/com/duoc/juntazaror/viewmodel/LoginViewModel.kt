@@ -21,9 +21,14 @@ data class LoginErrores(
     val general: String? = null
 )
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class LoginViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: CuentaRemoteRepository = CuentaRemoteRepository(),
+    private val notificador: NotificadorReservas = NotificadorReservas(application)
+) : AndroidViewModel(application) {
 
-    private val repository = CuentaRemoteRepository()
 
     private val _login = MutableStateFlow(LoginModel())
     val login: StateFlow<LoginModel> = _login.asStateFlow()
@@ -40,7 +45,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _usuario = MutableStateFlow<UsuarioSesion?>(null)
     val usuario: StateFlow<UsuarioSesion?> = _usuario.asStateFlow()
 
-    private val notificador = NotificadorReservas(application)
     private var jobNotificaciones: Job? = null
 
     fun actualizarCorreo(valor: String) {

@@ -1,14 +1,16 @@
 package com.duoc.juntazaror.data.repository
 
 import com.duoc.juntazaror.model.TipoMovimiento
+import com.duoc.juntazaror.remote.ApiService
 import com.duoc.juntazaror.remote.RetrofitInstance
 import com.duoc.juntazaror.remote.dto.MovimientoDto
 import com.duoc.juntazaror.remote.dto.MovimientoRequest
 import com.duoc.juntazaror.remote.dto.ResumenFinancieroDto
 import com.duoc.juntazaror.remote.safeApiCall
 
-class MovimientoRemoteRepository {
-    private val api = RetrofitInstance.api
+class MovimientoRemoteRepository(
+    private val api: ApiService = RetrofitInstance.api
+) {
 
     suspend fun listar(): Result<List<MovimientoDto>> = safeApiCall { api.movimientos() }
 

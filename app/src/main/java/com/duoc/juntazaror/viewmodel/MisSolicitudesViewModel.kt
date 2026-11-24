@@ -10,9 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MisSolicitudesViewModel(application: Application) : AndroidViewModel(application) {
-//se deja de usar room, la bd local.
-    private val repository = ReservaRemoteRepository()//<- de su repo remoto.
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class MisSolicitudesViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: ReservaRemoteRepository = ReservaRemoteRepository()
+) : AndroidViewModel(application) {
 
     private val _solicitudes = MutableStateFlow<List<ReservaDto>>(emptyList())
     val solicitudes: StateFlow<List<ReservaDto>> = _solicitudes.asStateFlow()

@@ -1,5 +1,7 @@
 package com.duoc.juntazaror.ui.screens
 
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,6 +71,8 @@ fun SolicitarArriendoScreen(
     var mostrarCalendario by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val ocupados by viewModel.ocupados.collectAsState()
+    val feriados by viewModel.feriados.collectAsState()
+    val errorFeriados by viewModel.errorFeriados.collectAsState()
 
     LaunchedEffect(guardada) {
         if (guardada) {
@@ -115,7 +119,36 @@ fun SolicitarArriendoScreen(
                 }
             },
             isError = errores.fecha != null,
-            supportingText = { errores.fecha?.let { MensajeError(it) } }
+            supportingText = { errores.fecha?.let { MensajeError(it) }
+                val hoy = remember { LocalDate.now().toString() }
+                val proximoFeriado = feriados.entries
+                    .filter { it.key >= hoy }
+                    .minByOrNull { it.key }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        when {
+                            errorFeriados -> Text(
+                                "No se pudieron cargar los feriados. Revisa tu conexión a internet.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            proximoFeriado != null -> {
+                                Text(
+                                    "Próximo feriado: ${formatearFecha(proximoFeriado.key)} · ${proximoFeriado.value}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    "Los feriados aparecen bloqueados en el calendario.",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            else -> Text("Cargando feriados...", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }}
+
         )
 
 
@@ -185,8 +218,10 @@ fun SolicitarArriendoScreen(
         }
         val pickerState = rememberDatePickerState(
             selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean =
-                    utcTimeMillis >= hoyUtc
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val fecha = Instant.ofEpochMilli(utcTimeMillis).atZone(ZoneOffset.UTC).toLocalDate()
+                    return utcTimeMillis >= hoyUtc && fecha.toString() !in feriados
+                }
             }
         )
         DatePickerDialog(

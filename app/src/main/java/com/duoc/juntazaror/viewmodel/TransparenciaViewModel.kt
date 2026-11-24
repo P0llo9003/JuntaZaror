@@ -11,9 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class TransparenciaViewModel(application: Application) : AndroidViewModel(application) {
-// ya no se usa room, paso a remoto.
-    private val repository = MovimientoRemoteRepository()
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class TransparenciaViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: MovimientoRemoteRepository = MovimientoRemoteRepository()
+) : AndroidViewModel(application) {
 
     private val _resumen = MutableStateFlow(ResumenFinancieroDto(0, 0, 0, 0))
     val resumen: StateFlow<ResumenFinancieroDto> = _resumen.asStateFlow()//ahora, el resumen financiero no es una data classs local, sino que se usa un dto (de Dtos.kt)

@@ -10,9 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class UsuariosViewModel(application: Application) : AndroidViewModel(application) {
-// pasó a remoto
-    private val repository = CuentaRemoteRepository()
+// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
+// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
+class UsuariosViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repository: CuentaRemoteRepository = CuentaRemoteRepository()
+) : AndroidViewModel(application) {
 
     private val _cuentas = MutableStateFlow<List<CuentaDto>>(emptyList())
     val cuentas: StateFlow<List<CuentaDto>> = _cuentas.asStateFlow()
