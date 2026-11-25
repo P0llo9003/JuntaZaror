@@ -176,6 +176,78 @@ app/src/main/java/com/duoc/juntazaror/
 
 > La API de feriados usa el internet del celular (WiFi o datos). El backend, en cambio, llega por el cable USB gracias a `adb reverse`.
 
+##  APK firmado y llave (.jks)
+
+La app se entrega como **APK de release firmado digitalmente** con una llave propia, generada desde Android Studio y guardada dentro del repositorio junto a su configuración.
+
+| Elemento | Ubicación en el repositorio |
+|---|---|
+| APK firmado | `app/release/app-release.apk` |
+| Llave de firma (.jks) | `app/keystore/juntazaror.jks` |
+| Configuración de la firma | `app/build.gradle.kts` (bloque `signingConfigs`) |
+
+**Datos de la llave**
+
+| Dato | Valor |
+|---|---|
+| Alias | `juntazaror` |
+| Algoritmo | RSA 2048 bits |
+| Validez | 25 años |
+| Certificado | TomasRojas SebastianGomez · Duoc UC · Santiago, CL |
+| Contraseñas | Las usadas en `storePassword` y `keyPassword` del `app/build.gradle.kts` |
+
+### Configuración de la firma (`app/build.gradle.kts`)
+
+```kotlin
+signingConfigs {
+    create("release") {
+        storeFile = file("keystore/juntazaror.jks")
+        storePassword = "..."   // ver app/build.gradle.kts
+        keyAlias = "juntazaror"
+        keyPassword = "..."     // ver app/build.gradle.kts
+    }
+}
+
+buildTypes {
+    release {
+        signingConfig = signingConfigs.getByName("release")
+        ...
+    }
+}
+```
+
+> Las contraseñas están en el `build.gradle.kts` solo porque es un trabajo académico y la rúbrica pide dejar el proyecto funcional en el repositorio. En una app real irían en un archivo fuera del control de versiones.
+
+### Cómo generar el APK firmado
+
+**Desde Android Studio**
+1. **Build > Generate Signed App Bundle / APK…** y elegir **APK**.
+2. En *Key store path* elegir `app/keystore/juntazaror.jks` (**Choose existing…**), con el alias `juntazaror`.
+3. Marcar la variante **release** y pulsar **Create**.
+4. El APK queda en `app/release/app-release.apk`.
+
+**Desde la terminal** (usa la `signingConfig` del Gradle)
+```bash
+./gradlew assembleRelease   # el APK queda en app/build/outputs/apk/release/
+```
+
+### Verificar la firma
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\build-tools\<versión>\apksigner.bat" verify --verbose app\release\app-release.apk
+```
+Debe indicar `Verified using v2 scheme: true`.
+
+### Instalar el APK
+Con un emulador abierto o un celular conectado por USB, se puede arrastrar `app-release.apk` al dispositivo o instalarlo con:
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\release\app-release.apk
+```
+Para que la app llegue al backend hay que ejecutar antes el `adb reverse` del paso 5 de *Ejecutar la app*.
+
+### Captura del APK firmado y del .jks
+
+![APK firmado y llave .jks](docs/captura-apk-firmado.png)
+
 ##  Usuarios de prueba
 
 Liquibase crea estas cuentas en el backend la primera vez que se levanta. Según el rol, cada cuenta entra a pantallas distintas, y los vecinos no pueden acceder a ellas:
