@@ -20,9 +20,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore/juntazaror.jks")
+            storePassword = "Zaror2026"
+            keyAlias = "juntazaror"
+            keyPassword = "Zaror2026"
+        }
+    }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -48,7 +57,6 @@ android {
         buildConfig = true
     }
 }
-
 dependencies {
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.core.ktx)
