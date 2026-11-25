@@ -8,7 +8,6 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 activityCompose = "1.13.0"
 composeBom = "2024.09.00"
-room = "2.6.1"
 navigationCompose = "2.8.9"
 material3AdaptiveNavigationSuite = "1.4.0"
 

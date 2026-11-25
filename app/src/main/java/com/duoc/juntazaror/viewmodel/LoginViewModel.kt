@@ -21,8 +21,6 @@ data class LoginErrores(
     val general: String? = null
 )
 
-// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
-// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
 class LoginViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: CuentaRemoteRepository = CuentaRemoteRepository(),
@@ -38,9 +36,6 @@ class LoginViewModel @JvmOverloads constructor(
 
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
-
-    private val _nombreUsuario = MutableStateFlow("")
-    val nombreUsuario: StateFlow<String> = _nombreUsuario.asStateFlow()
 
     private val _usuario = MutableStateFlow<UsuarioSesion?>(null)
     val usuario: StateFlow<UsuarioSesion?> = _usuario.asStateFlow()
@@ -64,7 +59,6 @@ class LoginViewModel @JvmOverloads constructor(
         jobNotificaciones?.cancel()
         jobNotificaciones = null
         _usuario.value = null
-        _nombreUsuario.value = ""
         _login.value = LoginModel()
         _errores.value = LoginErrores()
     }
@@ -84,7 +78,6 @@ class LoginViewModel @JvmOverloads constructor(
             repository.login(datos.email, datos.passwordHush)
                 .onSuccess { cuenta ->
                     val sesion = UsuarioSesion(cuenta.id.toInt(), cuenta.name, cuenta.email, cuenta.rol)
-                    _nombreUsuario.value = cuenta.name
                     _usuario.value = sesion
                     iniciarNotificaciones(sesion)
                     onExito(cuenta.rol)

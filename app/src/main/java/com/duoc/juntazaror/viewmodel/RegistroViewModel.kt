@@ -18,8 +18,6 @@ data class RegistroErrores(
     val acceptTerms: String? = null
 )
 
-// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
-// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
 class RegistroViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: CuentaRemoteRepository = CuentaRemoteRepository()
@@ -117,7 +115,6 @@ class RegistroViewModel @JvmOverloads constructor(
     }
 
     companion object {
-        // Reemplaza a android.util.Patterns.EMAIL_ADDRESS, que no funciona en pruebas unitarias (JVM).
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     }
 }

@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// El repositorio se recibe por constructor (con valor por defecto) para poder usar un mock en las pruebas.
-// @JvmOverloads genera también el constructor (Application) que necesita viewModel().
 class MisSolicitudesViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: ReservaRemoteRepository = ReservaRemoteRepository()

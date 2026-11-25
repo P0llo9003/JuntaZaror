@@ -16,15 +16,6 @@ data class RegistroRequest(
     //ya no recibe el campo rol.
 )
 
-
-data class CuentaRequest(
-    val name: String,
-    val email: String,
-    val password: String? = null,
-    val rol: Rol,
-    val phonenumber: String? = null
-)
-
 data class CuentaDto(
     val id: Long,
     val name: String,

@@ -18,20 +18,9 @@ interface ApiService {
     @GET("cuentas")
     suspend fun listarCuentas(@Query("rol") rol: Rol? = null): List<CuentaDto>
 
-    @GET("cuentas/{id}")
-    suspend fun cuentaPorId(@Path("id") id: Long): CuentaDto
-
-    @POST("cuentas")
-    suspend fun crearCuenta(@Body body: CuentaRequest): CuentaDto
-
-    @PUT("cuentas/{id}")
-    suspend fun actualizarCuenta(@Path("id") id: Long, @Body body: CuentaRequest): CuentaDto
-
     @DELETE("cuentas/{id}")
     suspend fun eliminarCuenta(@Path("id") id: Long)
 
-    @GET("reservas")
-    suspend fun listarReservas(@Query("estado") estado: EstadoReserva? = null): List<ReservaDto>
 
     @GET("reservas/cuenta/{cuentaId}")
     suspend fun reservasDeCuenta(@Path("cuentaId") cuentaId: Long): List<ReservaDto>
@@ -39,8 +28,6 @@ interface ApiService {
     @GET("reservas/solicitudes")
     suspend fun solicitudes(): List<ReservaDto>
 
-    @GET("reservas/bloques")
-    suspend fun bloques(): List<BloqueDto>
 
     @GET("reservas/disponibilidad")
     suspend fun disponibilidad(@Query("fecha") fecha: String): List<BloqueDto>
@@ -57,8 +44,6 @@ interface ApiService {
     @PUT("reservas/{id}/rechazar")
     suspend fun rechazar(@Path("id") id: Long, @Query("resolutorId") resolutorId: Long): ReservaDto
 
-    @DELETE("reservas/{id}")
-    suspend fun eliminarReserva(@Path("id") id: Long)
 
     @GET("movimientos")
     suspend fun movimientos(
@@ -76,6 +61,4 @@ interface ApiService {
     @POST("movimientos")
     suspend fun crearMovimiento(@Body body: MovimientoRequest): MovimientoDto
 
-    @DELETE("movimientos/{id}")
-    suspend fun eliminarMovimiento(@Path("id") id: Long, @Query("usuarioId") usuarioId: Long)
 }
